@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-kubernetes-api
+  labels:
+    app: docker-kubernetes-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: docker-kubernetes-api
+  template:
+    metadata:
+      labels:
+        app: docker-kubernetes-api
+    spec:
+      containers:
+      - name: docker-kubernetes-api
+        image: node-docker-kubernetes-api:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "64Mi"
+          limits:
+            cpu: "500m"
+            memory: "128Mi"
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10   
+        livenessProbe:
+          httpGet:
+            path: /healthy
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 20
